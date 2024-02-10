@@ -1,11 +1,38 @@
-import axios, { AxiosError, AxiosHeaders } from "axios";
+import { useReducer } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import NotificationContext from "./components/NotificationContext";
 
 import AnecdoteForm from "./components/AnecdoteForm";
 import Notification from "./components/Notification";
 import { fetchAnecdotes, updateAnecdote } from "./request";
 
+const notificationReducer = (state, action) => {
+    switch (action.type) {
+        case "NEW_ANCECDOTE":
+            return action.payload;
+        case "VOTED": {
+            console.log(state);
+            return {
+                ...state,
+                content: `anecdote ${action.payload} voted`,
+            };
+        }
+        case "RESET": {
+            return {
+                content: action.payload,
+            };
+        }
+
+        default:
+            return state;
+    }
+};
+
 const App = () => {
+    const [notification, notificationDispatch] = useReducer(
+        notificationReducer,
+        { content: "" }
+    );
     const queryClient = useQueryClient();
     const { isPending, isError, data, error } = useQuery({
         queryKey: ["anecdotes"],
@@ -40,27 +67,40 @@ const App = () => {
     const anecdotes = data;
 
     const handleVote = (anecdote) => {
-        console.log("vote");
         updateAnecdoteMutation.mutate({
             ...anecdote,
             votes: anecdote.votes + 1,
         });
+
+        notificationDispatch({ type: "VOTED", payload: anecdote.content });
+        // resetNotification;
+
+        setTimeout(
+            () => notificationDispatch({ type: "RESET", payload: "" }),
+            5000
+        );
+
     };
+
     /*
-    const anecdotes = [
-        {
-            content: "If it hurts, do it more often",
-            id: "47145",
-            votes: 0,
-        },
-    ];
+    const resetNotification = setTimeout(
+        () => notificationDispatch({ type: "RESET", payload: "" }),
+        5000
+    );
 */
     return (
-        <div>
+        <NotificationContext.Provider value={[anecdotes]}>
             <h3>Anecdote app</h3>
 
-            <Notification />
-            <AnecdoteForm />
+            <Notification notification={notification?.content} />
+            <AnecdoteForm
+                dispatch={notificationDispatch}
+                type={"NEW_ANCECDOTE"}
+                timeout={setTimeout(
+                    () => notificationDispatch({ type: "RESET", payload: "" }),
+                    5000
+                )}
+            />
 
             {anecdotes.map((anecdote) => (
                 <div key={anecdote.id}>
@@ -73,7 +113,7 @@ const App = () => {
                     </div>
                 </div>
             ))}
-        </div>
+        </NotificationContext.Provider>
     );
 };
 

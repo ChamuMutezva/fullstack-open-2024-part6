@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import PropTypes from "prop-types";
 import { createAnecdotes } from "../request";
-const AnecdoteForm = () => {
+// eslint-disable-next-line react/prop-types
+const AnecdoteForm = ({ dispatch, type }) => {
     const queryClient = useQueryClient();
     const newAnecdoteMutation = useMutation({
         mutationFn: createAnecdotes,
@@ -14,8 +16,11 @@ const AnecdoteForm = () => {
         newAnecdoteMutation.mutate({ content, votes: 0 });
         event.target.anecdote.value = "";
         console.log("new anecdote");
+        dispatch({ type, payload: { content } });
+      
+        console.log(content);
     };
-
+    // console.log(notification);
     return (
         <div>
             <h3>create new</h3>
