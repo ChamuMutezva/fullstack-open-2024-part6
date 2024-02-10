@@ -72,22 +72,14 @@ const App = () => {
             votes: anecdote.votes + 1,
         });
 
-        notificationDispatch({ type: "VOTED", payload: anecdote.content });
-        // resetNotification;
+        notificationDispatch({ type: "VOTED", payload: anecdote.content });    
 
         setTimeout(
             () => notificationDispatch({ type: "RESET", payload: "" }),
             5000
         );
-
     };
 
-    /*
-    const resetNotification = setTimeout(
-        () => notificationDispatch({ type: "RESET", payload: "" }),
-        5000
-    );
-*/
     return (
         <NotificationContext.Provider value={[anecdotes]}>
             <h3>Anecdote app</h3>
